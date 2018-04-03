@@ -131,9 +131,13 @@ void mqttTask(void* parameter) {
 			ESP_ERROR_CHECK(gpio_set_level(GPIO_OUTPUT_IO_0, 1));
 			// give 100 milisecond delay so the sensor can stabilize
 			vTaskDelay(100);
-			int sensorValue = adc1_get_voltage(ADC1_CHANNEL_0);
-			int percentSensorValue = map(sensorValue, 1023, 320, 0, 100);
-			Serial.printf("Sensor value %d%%\n", percentSensorValue);
+			int lemongrassSensorValue = adc1_get_voltage(ADC1_CHANNEL_0);
+			int chinacelerySensorValue = adc1_get_voltage(ADC1_CHANNEL_3);
+			int rosemarySensorValue = adc1_get_voltage(ADC1_CHANNEL_6);
+			int lemongrassPC = map(lemongrassSensorValue, 1023, 320, 0, 100);
+			int chineseceleryPC = map(chinacelerySensorValue, 1023, 320, 0, 100);
+			int rosemaryPC = map(rosemarySensorValue, 1023, 320, 0, 100);
+			Serial.printf("Sensor value %d%%,%d%%,%d%%\n", lemongrassPC, chineseceleryPC, rosemaryPC);
 			// turn off GPIO
 			ESP_ERROR_CHECK(gpio_set_level(GPIO_OUTPUT_IO_0, 0));
 
@@ -141,7 +145,7 @@ void mqttTask(void* parameter) {
 			struct tm timeinfo; getLocalTime(&timeinfo);	char timeInfoString[85]; char mqttString[150];			
 			strftime(timeInfoString, sizeof(timeInfoString), "%c %Z ", &timeinfo);
 			minPassed++;
-			snprintf(mqttString, 120, "%s | uptime = %d | Moisture = %d%%", timeInfoString, minPassed, percentSensorValue);
+			snprintf(mqttString, 120, "Lemon Grass: %d%% | Chinese Celery: %d%% | Rosemary: %d%%", lemongrassPC, chineseceleryPC, rosemaryPC);
 			Serial.println("####################################################");
 			Serial.println(mqttString);
 			Serial.println("####################################################");
