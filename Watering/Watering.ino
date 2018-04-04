@@ -10,6 +10,9 @@
 #include "esp_wifi.h"
 #include <ArduinoJson.hpp>
 #include <ArduinoJson.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x3F, 16, 2);
 
 
 // Update these with values suitable for your network.
@@ -28,6 +31,10 @@ char password[] = "usin27051989";
 char mqtt_server[] = "iot.eclipse.org";
 
 void setup() {
+	//LCD
+	lcd.begin(GPIO_NUM_21, GPIO_NUM_22);
+	lcd.backlight();
+
 	// Set listen channel
 	adc1_config_width(ADC_WIDTH_BIT_10);
 	adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11);
@@ -134,6 +141,7 @@ void mqttTask(void* parameter) {
 			ESP_ERROR_CHECK(gpio_set_level(GPIO_OUTPUT_IO_0, 1));
 			// give 100 milisecond delay so the sensor can stabilize
 			vTaskDelay(100);
+			
 			int lemongrassSensorValue = processingData(320, 1023, adc1_get_raw(ADC1_CHANNEL_0)); //1023 - 320
 			int chinacelerySensorValue = processingData(320, 1023, adc1_get_raw(ADC1_CHANNEL_3)); //1023 - 320
 			int rosemarySensorValue = processingData(320, 1023, adc1_get_raw(ADC1_CHANNEL_6)); //1023 - 320
@@ -148,7 +156,13 @@ void mqttTask(void* parameter) {
 			int chineseceleryPC = map(chinacelerySensorValue, 1023, 320, 0, 100);
 			int rosemaryPC = map(rosemarySensorValue, 1023, 320, 0, 100);
 			int perillaPC = map(perillaSensorValue, 840, 580, 0, 100);
-			Serial.printf("Sensor value %d%%,%d%%,%d%%\n", lemongrassPC, chineseceleryPC, rosemaryPC, perillaPC);
+
+			Serial.printf("Sensor value %d%%,%d%%,%d%%,%d%%\n", lemongrassPC, chineseceleryPC, rosemaryPC, perillaPC);
+			//lcd.clear();
+			lcd.setCursor(0, 0);
+			lcd.printf("LG:%3d%% CC:%3d%%", lemongrassPC, chineseceleryPC);
+			lcd.setCursor(0, 1);
+			lcd.printf("RM:%3d%% Pe:%3d%%", rosemaryPC, perillaPC);
 			// turn off GPIO
 			ESP_ERROR_CHECK(gpio_set_level(GPIO_OUTPUT_IO_0, 0));
 
